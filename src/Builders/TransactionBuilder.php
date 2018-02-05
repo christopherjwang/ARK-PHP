@@ -151,12 +151,12 @@ class TransactionBuilder
         return $transaction;
     }
 
-    public function createMultiSignature(string $secret, string $secondSecret, string $keysgroup, int $lifetime, int $min)
+    public function createMultiSignature(string $secret, string $secondSecret, array $keysgroup, int $lifetime, int $min)
     {
         $transaction = self::createEmptyTransaction();
         $transaction->type = TransactionType::MULTISIGNATURE;
         $transaction->amount = 0;
-        $transaction->fee = TransactionFee::MULTISIGNATURE;
+        $transaction->fee = (count($keysgroup) + 1) * TransactionFee::MULTISIGNATURE;
         $transaction->timestamp = self::getTimeSinceEpoch();
         $transaction->asset['multisignature'] = array(
             'min' => $min,
@@ -245,7 +245,7 @@ class TransactionBuilder
         {
             $out .= pack('C', $transaction->asset['multisignature']['min']);
             $out .= pack('C', $transaction->asset['multisignature']['lifetime']);
-            $out .= $transaction->asset['multisignature']['keysgroup'];
+            $out .= join('', $transaction->asset['multisignature']['keysgroup']);
         }
 
         if(!$skipSignature && $transaction->signature){
